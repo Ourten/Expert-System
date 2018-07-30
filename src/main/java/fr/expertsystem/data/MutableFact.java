@@ -1,5 +1,7 @@
 package fr.expertsystem.data;
 
+import java.util.Objects;
+
 public class MutableFact extends Fact
 {
     private boolean negated;
@@ -35,5 +37,21 @@ public class MutableFact extends Fact
     public String toString()
     {
         return (negated ? "!" : "") + this.getID();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        MutableFact that = (MutableFact) o;
+        return isNegated() == that.isNegated();
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(super.hashCode(), isNegated());
     }
 }

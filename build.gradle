@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 repositories {
-	jcenter()
+    jcenter()
 }
 
 compileJava.options.encoding = 'UTF-8'
@@ -13,3 +13,11 @@ targetCompatibility = 1.8
 group = "fr.expertsystem"
 archivesBaseName = "Expert-System"
 version = "0.1.0"
+
+dependencies {
+    testCompile('org.junit.jupiter:junit-jupiter-api:5.2.0')
+    testCompile('org.mockito:mockito-core:2.20.1')
+    testCompile('org.assertj:assertj-core:3.10.0')
+
+    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.2.0')
+}
