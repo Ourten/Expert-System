@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// TODO: replace all trims with a whitespace regex (trim doesn't support tabs)
 // TODO: custom exception
 public class Parser {
     public static Rule.Builder.LeftPartBuilder parseAndAddFactLeft(Rule.Builder.LeftPartBuilder leftPartBuilder, String rawFact) {
@@ -49,7 +48,7 @@ public class Parser {
                 parseAndAddFactLeft(leftBuilder, parts[0]);
             } else {
                 rawLeftPart[0] = rawLeftPart[0].trim();
-                rawLeftPart[1] = rawLeftPart[1].replaceAll(" ", "");
+                rawLeftPart[1] = rawLeftPart[1].replaceAll("\\s+","");
 
                 // <condChar><rightFact>
                 if (rawLeftPart[1].length() < 2 || rawLeftPart[1].length() > 3)
