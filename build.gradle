@@ -1,0 +1,15 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+repositories {
+	jcenter()
+}
+
+compileJava.options.encoding = 'UTF-8'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+// Maven Artefacts Info
+group = "fr.expertsystem"
+archivesBaseName = "Expert-System"
+version = "0.1.0"
