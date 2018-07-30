@@ -21,7 +21,8 @@ public enum Conditions
         return String.format("%c", getChar());
     }
 
-    public char getChar() {
+    public char getChar()
+    {
         return conChar;
     }
 
