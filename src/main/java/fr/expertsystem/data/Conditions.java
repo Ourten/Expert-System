@@ -4,5 +4,21 @@ public enum Conditions
 {
     AND,
     OR,
-    XOR
+    XOR;
+
+    @Override
+    public String toString()
+    {
+        switch (this)
+        {
+            case AND:
+                return "+";
+            case OR:
+                return "|";
+            case XOR:
+                return "^";
+            default:
+                return "???";
+        }
+    }
 }

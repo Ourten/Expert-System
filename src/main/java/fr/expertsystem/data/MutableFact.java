@@ -30,4 +30,10 @@ public class MutableFact extends Fact
     {
         this.ID = ID;
     }
+
+    @Override
+    public String toString()
+    {
+        return (negated ? "!" : "") + this.getID();
+    }
 }

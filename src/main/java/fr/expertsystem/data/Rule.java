@@ -39,6 +39,12 @@ public class Rule
         return rightPart.facts;
     }
 
+    @Override
+    public String toString()
+    {
+        return leftPart.toString() + "= " + rightPart.toString();
+    }
+
     public static class Builder
     {
         private RulePart leftPart;
@@ -175,13 +181,13 @@ public class Rule
 
             for (MutableFact fact : facts)
             {
-                builder.append(fact.getID());
+                builder.append(fact.toString());
 
                 int idx = facts.indexOf(fact);
                 if (idx < conditions.size())
                 {
                     builder.append(" ");
-                    builder.append(conditions.get(idx));
+                    builder.append(conditions.get(idx).toString());
                 }
 
                 builder.append(" ");
