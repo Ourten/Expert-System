@@ -42,7 +42,7 @@ public class Rule
     @Override
     public String toString()
     {
-        return leftPart.toString() + "= " + rightPart.toString();
+        return leftPart.toString() + "=> " + rightPart.toString();
     }
 
     public static class Builder
