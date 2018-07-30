@@ -2,6 +2,7 @@ package fr.expertsystem.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Rule
 {
@@ -31,12 +32,12 @@ public class Rule
 
     public List<MutableFact> getDependencies()
     {
-        return leftPart.facts;
+        return leftPart.getFacts();
     }
 
     public List<MutableFact> getDependents()
     {
-        return rightPart.facts;
+        return rightPart.getFacts();
     }
 
     @Override
@@ -62,15 +63,12 @@ public class Rule
 
         public static class LeftPartBuilder
         {
-            private List<MutableFact> facts;
-            private List<Conditions>  conditions;
-            private Builder           parent;
+            private List<IRuleElement> elements;
+            private Builder            parent;
 
             public LeftPartBuilder(Builder parent)
             {
-                this.facts = new ArrayList<>();
-                this.conditions = new ArrayList<>();
-
+                this.elements = new ArrayList<>();
                 this.parent = parent;
             }
 
@@ -88,19 +86,19 @@ public class Rule
 
             public LeftPartBuilder fact(String fact, boolean negated)
             {
-                facts.add(new MutableFact(fact, negated));
+                elements.add(new MutableFact(fact, negated));
                 return this;
             }
 
             public LeftPartBuilder cond(Conditions condition)
             {
-                conditions.add(condition);
+                elements.add(condition);
                 return this;
             }
 
             public RightPartBuilder imply()
             {
-                parent.leftPart = new RulePart(facts, conditions);
+                parent.leftPart = new RulePart(elements);
 
                 return new RightPartBuilder(parent);
             }
@@ -108,14 +106,12 @@ public class Rule
 
         public static class RightPartBuilder
         {
-            private List<MutableFact> facts;
-            private List<Conditions>  conditions;
-            private Builder           parent;
+            private List<IRuleElement> elements;
+            private Builder            parent;
 
             public RightPartBuilder(Builder parent)
             {
-                this.facts = new ArrayList<>();
-                this.conditions = new ArrayList<>();
+                this.elements = new ArrayList<>();
 
                 this.parent = parent;
             }
@@ -134,20 +130,19 @@ public class Rule
 
             public RightPartBuilder fact(String fact, boolean negated)
             {
-                facts.add(new MutableFact(fact, negated));
+                elements.add(new MutableFact(fact, negated));
                 return this;
             }
 
             public RightPartBuilder cond(Conditions condition)
             {
-                conditions.add(condition);
+                elements.add(condition);
                 return this;
             }
 
             public Rule create()
             {
-                parent.rightPart = new RulePart(facts, conditions);
-
+                parent.rightPart = new RulePart(elements);
                 return parent.create();
             }
         }
@@ -155,23 +150,23 @@ public class Rule
 
     private static class RulePart
     {
-        private List<MutableFact> facts;
-        private List<Conditions>  conditions;
+        private List<IRuleElement> elements;
 
-        private RulePart(List<MutableFact> facts, List<Conditions> conditions)
+        private RulePart(List<IRuleElement> elements)
         {
-            this.facts = facts;
-            this.conditions = conditions;
+            this.elements = elements;
         }
 
         public List<MutableFact> getFacts()
         {
-            return facts;
+            return elements.stream().filter(MutableFact.class::isInstance)
+                    .map(MutableFact.class::cast).collect(Collectors.toList());
         }
 
         public List<Conditions> getConditions()
         {
-            return conditions;
+            return elements.stream().filter(Conditions.class::isInstance)
+                    .map(Conditions.class::cast).collect(Collectors.toList());
         }
 
         @Override
@@ -179,19 +174,11 @@ public class Rule
         {
             StringBuilder builder = new StringBuilder();
 
-            for (MutableFact fact : facts)
+            this.elements.forEach(element ->
             {
-                builder.append(fact.toString());
-
-                int idx = facts.indexOf(fact);
-                if (idx < conditions.size())
-                {
-                    builder.append(" ");
-                    builder.append(conditions.get(idx).toString());
-                }
-
+                builder.append(element.toString());
                 builder.append(" ");
-            }
+            });
             return builder.toString();
         }
     }

@@ -2,7 +2,7 @@ package fr.expertsystem.data;
 
 import java.util.Objects;
 
-public class MutableFact extends Fact
+public class MutableFact extends Fact implements IRuleElement
 {
     private boolean negated;
 
