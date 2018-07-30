@@ -16,10 +16,10 @@ public class Parser
         boolean isNeg = rawFact.startsWith("!");
         int factIndex = isNeg ? 1 : 0;
         if (rawFact.length() != factIndex + 1)
-            throw new RuntimeException("Invalid fact" + rawFact);
+            throw new RuntimeException("Invalid fact " + rawFact);
         char factID = rawFact.charAt(factIndex);
         if (!Character.isAlphabetic(factID))
-            throw new RuntimeException("Invalid fact" + rawFact);
+            throw new RuntimeException("Invalid fact " + rawFact);
         return leftPartBuilder.fact(String.valueOf(factID), isNeg);
     }
 
@@ -29,23 +29,25 @@ public class Parser
         boolean isNeg = rawFact.startsWith("!");
         int factIndex = isNeg ? 1 : 0;
         if (rawFact.length() != factIndex + 1)
-            throw new RuntimeException("Invalid fact" + rawFact);
+            throw new RuntimeException("Invalid fact " + rawFact);
         char factID = rawFact.charAt(factIndex);
         if (!Character.isAlphabetic(factID))
-            throw new RuntimeException("Invalid fact" + rawFact);
+            throw new RuntimeException("Invalid fact " + rawFact);
         return rightPartBuilder.fact(String.valueOf(factID), isNeg);
     }
 
     private static Rule parseRule(String rawRule)
     {
         String[] parts = rawRule.split("=>");
-        if (parts.length != 2 || parts[0].isEmpty() || parts[1].isEmpty())
+        if (parts.length != 2)
             throw new RuntimeException("Invalid rule " + rawRule);
 
         parts[0] = parts[0].trim();
         parts[1] = parts[1].trim();
+        if (parts[0].isEmpty() || parts[1].isEmpty())
+            throw new RuntimeException("Invalid rule " + rawRule);
 
-        String[] rawLeftPart = parts[0].split("(?=[+\\-*])");
+        String[] rawLeftPart = parts[0].split("(?=[+|^])");
         Rule.Builder.LeftPartBuilder leftBuilder = Rule.build();
 
         // if the split fail, it must be a direct imply
