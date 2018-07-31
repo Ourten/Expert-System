@@ -3,6 +3,7 @@ package fr.expertsystem.data.graph;
 import fr.expertsystem.data.Rule;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Edge
@@ -32,5 +33,22 @@ public class Edge
     public Set<Vertex> getTo()
     {
         return to;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Edge edge = (Edge) o;
+        return Objects.equals(getRule(), edge.getRule()) &&
+                Objects.equals(getFrom(), edge.getFrom()) &&
+                Objects.equals(getTo(), edge.getTo());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(getRule(), getFrom(), getTo());
     }
 }

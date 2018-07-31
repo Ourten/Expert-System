@@ -10,9 +10,9 @@ public class TestRuleBuilder
     void simpleRule()
     {
         Rule rule = Rule.build().fact("A").cond(Conditions.AND).fact("B").imply().fact("C").create();
-        MutableFact A = new MutableFact("A", false);
-        MutableFact B = new MutableFact("B", false);
-        MutableFact C = new MutableFact("C", false);
+        Fact A = new Fact("A");
+        Fact B = new Fact("B");
+        Fact C = new Fact("C");
 
         assertThat(rule.getDependencies()).contains(A, B);
         assertThat(rule.getDependents()).containsOnly(C);

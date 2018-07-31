@@ -3,6 +3,7 @@ package fr.expertsystem.data.graph;
 import fr.expertsystem.data.Fact;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Vertex
@@ -32,5 +33,20 @@ public class Vertex
     public Set<Edge> getEdgesFrom()
     {
         return edgesFrom;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Vertex vertex = (Vertex) o;
+        return Objects.equals(getFact(), vertex.getFact());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(getFact());
     }
 }

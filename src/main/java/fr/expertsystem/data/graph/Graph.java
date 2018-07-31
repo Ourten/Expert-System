@@ -34,6 +34,13 @@ public class Graph
                 .orElseThrow(() -> new RuntimeException("No Vertex containing this Fact exist!"));
     }
 
+    public Vertex getOrCreate(Fact fact)
+    {
+        if (!this.containsFact(fact))
+            this.vertices.add(new Vertex(fact));
+        return this.getByFact(fact);
+    }
+
     public void addEdge(Edge edge, Set<Vertex> from, Set<Vertex> to)
     {
         edge.getFrom().addAll(from);
@@ -41,24 +48,13 @@ public class Graph
 
         from.forEach(vertex -> vertex.getEdgesFrom().add(edge));
         to.forEach(vertex -> vertex.getEdgesTo().add(edge));
+        this.edges.add(edge);
     }
 
     public void addRule(Rule rule)
     {
-        Set<Vertex> from = rule.getDependencies().stream()
-                .map(fact ->
-                {
-                    if (this.containsFact(fact))
-                        return this.getByFact(fact);
-                    return new Vertex(fact);
-                }).collect(Collectors.toSet());
-        Set<Vertex> to = rule.getDependents().stream()
-                .map(fact ->
-                {
-                    if (this.containsFact(fact))
-                        return this.getByFact(fact);
-                    return new Vertex(fact);
-                }).collect(Collectors.toSet());
+        Set<Vertex> from = rule.getDependencies().stream().map(this::getOrCreate).collect(Collectors.toSet());
+        Set<Vertex> to = rule.getDependents().stream().map(this::getOrCreate).collect(Collectors.toSet());
 
         Edge edge = new Edge(rule);
 

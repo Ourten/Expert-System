@@ -30,12 +30,12 @@ public class Rule
         return rightPart;
     }
 
-    public List<MutableFact> getDependencies()
+    public List<Fact> getDependencies()
     {
         return leftPart.getFacts();
     }
 
-    public List<MutableFact> getDependents()
+    public List<Fact> getDependents()
     {
         return rightPart.getFacts();
     }
@@ -74,19 +74,7 @@ public class Rule
 
             public LeftPartBuilder fact(String fact)
             {
-                this.fact(fact, false);
-                return this;
-            }
-
-            public LeftPartBuilder factNeg(String fact)
-            {
-                this.fact(fact, true);
-                return this;
-            }
-
-            public LeftPartBuilder fact(String fact, boolean negated)
-            {
-                elements.add(new MutableFact(fact, negated));
+                elements.add(new Fact(fact));
                 return this;
             }
 
@@ -118,19 +106,7 @@ public class Rule
 
             public RightPartBuilder fact(String fact)
             {
-                this.fact(fact, false);
-                return this;
-            }
-
-            public RightPartBuilder factNeg(String fact)
-            {
-                this.fact(fact, true);
-                return this;
-            }
-
-            public RightPartBuilder fact(String fact, boolean negated)
-            {
-                elements.add(new MutableFact(fact, negated));
+                elements.add(new Fact(fact));
                 return this;
             }
 
@@ -148,7 +124,7 @@ public class Rule
         }
     }
 
-    private static class RulePart
+    public static class RulePart
     {
         private List<IRuleElement> elements;
 
@@ -157,16 +133,21 @@ public class Rule
             this.elements = elements;
         }
 
-        public List<MutableFact> getFacts()
+        public List<Fact> getFacts()
         {
-            return elements.stream().filter(MutableFact.class::isInstance)
-                    .map(MutableFact.class::cast).collect(Collectors.toList());
+            return elements.stream().filter(Fact.class::isInstance)
+                    .map(Fact.class::cast).collect(Collectors.toList());
         }
 
         public List<Conditions> getConditions()
         {
             return elements.stream().filter(Conditions.class::isInstance)
                     .map(Conditions.class::cast).collect(Collectors.toList());
+        }
+
+        public List<IRuleElement> getElements()
+        {
+            return elements;
         }
 
         @Override

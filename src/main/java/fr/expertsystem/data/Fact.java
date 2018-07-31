@@ -2,7 +2,7 @@ package fr.expertsystem.data;
 
 import java.util.Objects;
 
-public class Fact
+public class Fact implements IRuleElement
 {
     protected String ID;
 

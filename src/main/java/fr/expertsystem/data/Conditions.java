@@ -4,19 +4,18 @@ import java.util.Optional;
 
 public enum Conditions implements IRuleElement
 {
-    AND('+', 1),
-    OR('|', 0),
-    XOR('^', 0),
-    OPEN_PARENTHESIS('(', 99),
-    CLOSE_PARENTHESIS(')', 99);
+    XOR('^'),
+    OR('|'),
+    AND('+'),
+    NOT('!'),
+    OPEN_PARENTHESIS('('),
+    CLOSE_PARENTHESIS(')');
 
     private final char conChar;
-    private final int  precedence;
 
-    Conditions(char condChar, int precedence)
+    Conditions(char condChar)
     {
         this.conChar = condChar;
-        this.precedence = precedence;
     }
 
     @Override
@@ -32,7 +31,7 @@ public enum Conditions implements IRuleElement
 
     public int getPrecedence()
     {
-        return precedence;
+        return this.ordinal();
     }
 
     public static Optional<Conditions> fromChar(char condChar)
