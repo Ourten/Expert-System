@@ -2,6 +2,7 @@ package fr.expertsystem.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Rule
@@ -9,7 +10,7 @@ public class Rule
     private RulePart leftPart;
     private RulePart rightPart;
 
-    private Rule(RulePart leftPart, RulePart rightPart)
+    public Rule(RulePart leftPart, RulePart rightPart)
     {
         this.leftPart = leftPart;
         this.rightPart = rightPart;
@@ -44,6 +45,22 @@ public class Rule
     public String toString()
     {
         return leftPart.toString() + "=> " + rightPart.toString();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Rule rule = (Rule) o;
+        return Objects.equals(getLeftPart(), rule.getLeftPart()) &&
+                Objects.equals(getRightPart(), rule.getRightPart());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(getLeftPart(), getRightPart());
     }
 
     public static class Builder
@@ -151,7 +168,7 @@ public class Rule
     {
         private List<IRuleElement> elements;
 
-        private RulePart(List<IRuleElement> elements)
+        public RulePart(List<IRuleElement> elements)
         {
             this.elements = elements;
         }
@@ -186,6 +203,21 @@ public class Rule
                     builder.append(" ");
             });
             return builder.toString();
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            RulePart rulePart = (RulePart) o;
+            return Objects.equals(getElements(), rulePart.getElements());
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(getElements());
         }
     }
 }

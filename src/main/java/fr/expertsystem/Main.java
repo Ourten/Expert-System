@@ -1,9 +1,6 @@
 package fr.expertsystem;
 
-import fr.expertsystem.data.Fact;
-import fr.expertsystem.data.FactState;
-import fr.expertsystem.data.GlobalState;
-import fr.expertsystem.data.Rule;
+import fr.expertsystem.data.*;
 import fr.expertsystem.data.graph.FactSolver;
 import fr.expertsystem.data.graph.Graph;
 import fr.expertsystem.parser.Parser;
@@ -36,10 +33,11 @@ public class Main
 
         List<Rule> rules = Parser.parseRules(rawRules);
 
-        for (Rule rule : rules)
-        {
-            System.out.println(rule);
-        }
+        rules.forEach(System.out::println);
+        rules = RuleExpander.expandRules(rules);
+
+        System.out.println("Expanding rules...");
+        rules.forEach(System.out::println);
 
         Graph graph = new Graph();
         rules.forEach(graph::addRule);
@@ -47,6 +45,7 @@ public class Main
         GlobalState state = new GlobalState();
         state.setFactState(new Fact("A"), FactState.TRUE);
         state.setFactState(new Fact("C"), FactState.TRUE);
-        graph.getEdges().forEach(edge -> System.out.println(edge.getRule()+" : "+FactSolver.parseRule(null, edge.getRule(), state)));
+        graph.getEdges().forEach(edge -> System.out.println(edge.getRule() + " : " + FactSolver.parseRule(null,
+                edge.getRule(), state)));
     }
 }
