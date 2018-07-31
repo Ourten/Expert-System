@@ -74,4 +74,14 @@ public class Graph
                 .flatMap(edge -> edge.getTo().stream().map(Vertex::getFact))
                 .collect(Collectors.toSet());
     }
+
+    public Set<Edge> getEdges()
+    {
+        return edges;
+    }
+
+    public Set<Vertex> getVertices()
+    {
+        return vertices;
+    }
 }

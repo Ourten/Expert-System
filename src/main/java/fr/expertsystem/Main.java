@@ -1,6 +1,11 @@
 package fr.expertsystem;
 
+import fr.expertsystem.data.Fact;
+import fr.expertsystem.data.FactState;
+import fr.expertsystem.data.GlobalState;
 import fr.expertsystem.data.Rule;
+import fr.expertsystem.data.graph.FactSolver;
+import fr.expertsystem.data.graph.Graph;
 import fr.expertsystem.parser.Parser;
 
 import java.io.IOException;
@@ -35,5 +40,13 @@ public class Main
         {
             System.out.println(rule);
         }
+
+        Graph graph = new Graph();
+        rules.forEach(graph::addRule);
+
+        GlobalState state = new GlobalState();
+        state.setFactState(new Fact("A"), FactState.TRUE);
+        state.setFactState(new Fact("C"), FactState.TRUE);
+        graph.getEdges().forEach(edge -> System.out.println(edge.getRule()+" : "+FactSolver.parseRule(null, edge.getRule(), state)));
     }
 }
