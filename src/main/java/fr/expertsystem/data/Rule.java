@@ -158,7 +158,9 @@ public class Rule
             this.elements.forEach(element ->
             {
                 builder.append(element.toString());
-                builder.append(" ");
+
+                if (element != Conditions.NOT)
+                    builder.append(" ");
             });
             return builder.toString();
         }
