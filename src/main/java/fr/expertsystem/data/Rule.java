@@ -61,7 +61,18 @@ public class Rule
             return new Rule(leftPart, rightPart);
         }
 
-        public static class LeftPartBuilder
+        public interface IPartBuilder
+        {
+            IPartBuilder fact(String fact);
+
+            IPartBuilder cond(Conditions condition);
+
+            IPartBuilder imply();
+
+            Rule create();
+        }
+
+        public static class LeftPartBuilder implements IPartBuilder
         {
             private List<IRuleElement> elements;
             private Builder            parent;
@@ -90,9 +101,15 @@ public class Rule
 
                 return new RightPartBuilder(parent);
             }
+
+            @Override
+            public Rule create()
+            {
+                throw new RuntimeException("Cannot create from left part!");
+            }
         }
 
-        public static class RightPartBuilder
+        public static class RightPartBuilder implements IPartBuilder
         {
             private List<IRuleElement> elements;
             private Builder            parent;
@@ -114,6 +131,12 @@ public class Rule
             {
                 elements.add(condition);
                 return this;
+            }
+
+            @Override
+            public IPartBuilder imply()
+            {
+                throw new RuntimeException("Cannot imply in right part!");
             }
 
             public Rule create()
