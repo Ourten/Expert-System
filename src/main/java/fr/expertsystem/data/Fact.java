@@ -30,4 +30,10 @@ public class Fact implements IRuleElement
     {
         return Objects.hash(getID());
     }
+
+    @Override
+    public String toString()
+    {
+        return this.getID();
+    }
 }
