@@ -20,7 +20,9 @@ public class Parser
         char factID = rawFact.charAt(factIndex);
         if (!Character.isAlphabetic(factID))
             throw new RuntimeException("Invalid fact " + rawFact);
-        return leftPartBuilder.fact(String.valueOf(factID), isNeg);
+        if (isNeg)
+            leftPartBuilder.cond(Conditions.NOT);
+        return leftPartBuilder.fact(String.valueOf(factID));
     }
 
     private static Rule.Builder.RightPartBuilder parseAndAddFactRight(Rule.Builder.RightPartBuilder rightPartBuilder,
@@ -33,7 +35,9 @@ public class Parser
         char factID = rawFact.charAt(factIndex);
         if (!Character.isAlphabetic(factID))
             throw new RuntimeException("Invalid fact " + rawFact);
-        return rightPartBuilder.fact(String.valueOf(factID), isNeg);
+        if (isNeg)
+            rightPartBuilder.cond(Conditions.NOT);
+        return rightPartBuilder.fact(String.valueOf(factID));
     }
 
     private static Rule parseRule(String rawRule)
