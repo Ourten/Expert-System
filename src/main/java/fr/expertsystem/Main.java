@@ -43,9 +43,13 @@ public class Main
         rules.forEach(graph::addRule);
 
         GlobalState state = new GlobalState();
-        state.setFactState(new Fact("A"), FactState.TRUE);
         state.setFactState(new Fact("C"), FactState.TRUE);
-        graph.getEdges().forEach(edge -> System.out.println(edge.getRule() + " : " + FactSolver.parseRule(null,
-                edge.getRule(), state)));
+
+        solveFact(new Fact("D"), state, graph);
+    }
+
+    private static void solveFact(Fact fact, GlobalState state, Graph graph)
+    {
+        System.out.println("Solving: " + fact + " = " + FactSolver.query(fact, state, graph));
     }
 }

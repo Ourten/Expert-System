@@ -14,25 +14,27 @@ public class FactSolver
     {
         // Start backward search
         if (graph.containsFact(query) && !graph.getByFact(query).getEdgesTo().isEmpty())
-        {
-            // Prevent loops
-            state.setFactState(query, FactState.UNKNOWN);
-
-            //     graph.getByFact(query).getEdgesTo().forEach(edge -> resolveEdge(edge, ));
-        }
+            return accumulate(graph.getByFact(query).getEdgesTo().stream().map(edge -> resolveEdge(query, edge,
+                    graph, state)).collect(Collectors.toList()));
         else
             return state.getFactState(query);
-        return FactState.FALSE;
     }
 
     private static FactState resolveEdge(Fact query, Edge edge, Graph graph, GlobalState state)
     {
-        if (edge.getFrom().stream().allMatch(vertex -> vertex.getEdgesTo().isEmpty()))
+        if (edge.getFrom().stream().anyMatch(vertex -> !vertex.getEdgesTo().isEmpty()))
         {
-            return parseRule(query, edge.getRule(), state);
+            // Prevent loops
+            state.setFactState(query, FactState.UNKNOWN);
+
+            if (edge.getRule().getDependencies().stream().map(state::getFactState).anyMatch(fact -> fact == FactState.UNKNOWN))
+                throw new RuntimeException("Circular dependency detected! Cannot solve " + query + " with " + edge.getRule());
+            edge.getFrom().forEach(vertex -> query(vertex.getFact(), state, graph));
         }
-        else
-            return accumulate(edge.getFrom().stream().map(vertex -> query(vertex.getFact(), state, graph)).collect(Collectors.toList()));
+
+        FactState result = parseRule(query, edge.getRule(), state);
+        state.setFactState(query, result);
+        return result;
     }
 
     public static FactState parseRule(Fact query, Rule rule, GlobalState state)

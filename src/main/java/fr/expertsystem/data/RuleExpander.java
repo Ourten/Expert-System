@@ -16,7 +16,7 @@ public class RuleExpander
         return rules;
     }
 
-    public static List<Rule> expandRule(Rule rule, Integer currentIndex)
+    private static List<Rule> expandRule(Rule rule, Integer currentIndex)
     {
         if (rule.getLeftPart().getElements().contains(Conditions.OPEN_PARENTHESIS))
         {
