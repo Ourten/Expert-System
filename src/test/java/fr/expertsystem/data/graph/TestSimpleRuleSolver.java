@@ -16,11 +16,11 @@ public class TestSimpleRuleSolver
 
         Rule rule = Rule.build().fact("A").cond(Conditions.AND).fact("B").imply().fact("C").create();
 
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.TRUE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isTrue();
 
         state.setFactState(new Fact("B"), FactState.FALSE);
 
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.FALSE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isFalse();
     }
 
     @Test
@@ -32,13 +32,13 @@ public class TestSimpleRuleSolver
 
         Rule rule = Rule.build().fact("A").cond(Conditions.OR).fact("B").imply().fact("C").create();
 
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.TRUE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isTrue();
 
         state.setFactState(new Fact("B"), FactState.FALSE);
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.TRUE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isTrue();
 
         state.setFactState(new Fact("A"), FactState.FALSE);
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.FALSE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isFalse();
     }
 
     @Test
@@ -50,16 +50,16 @@ public class TestSimpleRuleSolver
 
         Rule rule = Rule.build().fact("A").cond(Conditions.XOR).fact("B").imply().fact("C").create();
 
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.FALSE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isFalse();
 
         state.setFactState(new Fact("B"), FactState.FALSE);
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.TRUE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isTrue();
 
         state.setFactState(new Fact("A"), FactState.FALSE);
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.FALSE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isFalse();
 
         state.setFactState(new Fact("B"), FactState.TRUE);
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.TRUE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isTrue();
     }
 
     @Test
@@ -70,9 +70,9 @@ public class TestSimpleRuleSolver
 
         Rule rule = Rule.build().cond(Conditions.NOT).fact("A").imply().fact("B").create();
 
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.FALSE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isFalse();
 
         state.setFactState(new Fact("A"), FactState.FALSE);
-        assertThat(FactSolver.parseRule(null, rule, state)).isEqualTo(FactState.TRUE);
+        assertThat(FactSolver.parseRule(null, rule, state)).isTrue();
     }
 }

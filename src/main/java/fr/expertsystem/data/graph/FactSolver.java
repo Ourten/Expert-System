@@ -2,7 +2,9 @@ package fr.expertsystem.data.graph;
 
 import fr.expertsystem.data.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -12,34 +14,73 @@ public class FactSolver
 {
     public static FactState query(Fact query, GlobalState state, Graph graph)
     {
+        return internalQuery(query, state, graph, new ArrayList<>());
+    }
+
+    private static FactState internalQuery(Fact query, GlobalState state, Graph graph, List<Edge> openset)
+    {
         // Start backward search
         if (graph.containsFact(query) && !graph.getByFact(query).getEdgesTo().isEmpty())
-            return accumulate(graph.getByFact(query).getEdgesTo().stream().map(edge -> resolveEdge(query, edge,
-                    graph, state)).collect(Collectors.toList()));
-        else
-            return state.getFactState(query);
+        {
+            List<Optional<FactState>> accumulated = graph.getByFact(query).getEdgesTo().stream().map(edge ->
+                    resolveEdge(query, edge, graph, state, openset)).filter(Optional::isPresent).distinct().collect(Collectors.toList());
+
+            if (accumulated.size() > 1)
+                throw new RuntimeException("Contradiction of facts! Multiples rules that are true contradict each " +
+                        "other!");
+
+            // Really this cannot happen. This was only useful in debug.
+            if (!accumulated.isEmpty())
+                return accumulated.get(0).get();
+        }
+        return state.getFactState(query);
     }
 
-    private static FactState resolveEdge(Fact query, Edge edge, Graph graph, GlobalState state)
+    private static Optional<FactState> resolveEdge(Fact query, Edge edge, Graph graph, GlobalState state,
+                                                   List<Edge> openset)
     {
-        if (edge.getFrom().stream().anyMatch(vertex -> !vertex.getEdgesTo().isEmpty()))
+        // Early exit since rule has already been computed
+        if (state.containsRule(edge.getRule()))
         {
-            // Prevent loops
-            state.setFactState(query, FactState.UNKNOWN);
-
-            if (edge.getRule().getDependencies().stream().map(state::getFactState).anyMatch(fact -> fact == FactState.UNKNOWN))
-                throw new RuntimeException("Circular dependency detected! Cannot solve " + query + " with " + edge.getRule());
-            edge.getFrom().forEach(vertex -> query(vertex.getFact(), state, graph));
+            if (state.getRuleState(edge.getRule()))
+            {
+                state.setFactState(query, getFactFromRuleResult(query, edge.getRule()));
+                return Optional.ofNullable(state.getFactState(query));
+            }
+            return Optional.empty();
         }
 
-        FactState result = parseRule(query, edge.getRule(), state);
-        state.setFactState(query, result);
-        return result;
+        if (openset.contains(edge))
+            throw new RuntimeException("Circular dependency detected! Cannot solve " + query);
+        openset.add(edge);
+
+        if (edge.getFrom().stream().anyMatch(vertex -> !vertex.getEdgesTo().isEmpty()))
+            edge.getFrom().forEach(vertex -> internalQuery(vertex.getFact(), state, graph, openset));
+
+        boolean ruleResult = parseRule(query, edge.getRule(), state);
+
+        state.setRuleState(edge.getRule(), ruleResult);
+        if (ruleResult)
+        {
+            state.setFactState(query, getFactFromRuleResult(query, edge.getRule()));
+            return Optional.ofNullable(state.getFactState(query));
+        }
+        return Optional.empty();
     }
 
-    public static FactState parseRule(Fact query, Rule rule, GlobalState state)
+    private static FactState getFactFromRuleResult(Fact fact, Rule rule)
     {
-        return cond(rule.getLeftPart().getElements()).test(state) ? FactState.TRUE : FactState.FALSE;
+        List<IRuleElement> elements = rule.getRightPart().getElements();
+
+        if (elements.indexOf(fact) != 0)
+            return elements.get(elements.indexOf(fact) - 1).equals(NOT) ? FactState.FALSE : FactState.TRUE;
+
+        return FactState.TRUE;
+    }
+
+    static boolean parseRule(Fact query, Rule rule, GlobalState state)
+    {
+        return cond(rule.getLeftPart().getElements()).test(state);
     }
 
     private static Predicate<GlobalState> cond(List<IRuleElement> part)
@@ -67,17 +108,5 @@ public class FactSolver
                 return cond(part.subList(part.indexOf(NOT) + 1, part.size())).negate();
         }
         return state -> true;
-    }
-
-    private static FactState accumulate(List<FactState> collect)
-    {
-        for (FactState state : collect)
-        {
-            if (state == FactState.UNKNOWN)
-                return FactState.UNKNOWN;
-            if (state == FactState.TRUE)
-                return FactState.TRUE;
-        }
-        return FactState.FALSE;
     }
 }
