@@ -271,7 +271,7 @@ public class Parser {
         return partBuilder.create();
     }
 
-    public static List<Rule> parseRules(List<String> rawRules) {
+    private static List<Rule> parseRules(List<String> rawRules) {
         return rawRules.stream().map(Parser::parseRule).collect(Collectors.toList());
     }
 
