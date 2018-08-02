@@ -168,89 +168,63 @@ public class Parser {
             parseStringToken(elements, token);
         }
 
-        /*Element prevElement = null;
-
-        // must be set when encounter +|^ or ! (unset by imply or when a fact is encounter)
-        boolean requireFact = false;
-
-        // set when in operation mode
-        boolean operationProvided = false;
-
-        // set when encounter a fact and requireFact == false
-        boolean requireOperation = false;
-
-        Stack<Boolean> parenthesisStack = new Stack<>();
-
-        int parenthesisOpenCount = 0;
-
-        for (int i = 0; i < elements.size(); i++)
-        {
+        int openParenthesis = 0;
+        boolean afterImply = false;
+        Element prevElem = null;
+        for (int i = 0; i < elements.size(); i++) {
             Element element = elements.get(i);
-            Element.Type type = element.getType();
-            if (type == Element.Type.OPEN_PARENTHESIS)
-            {
-                parenthesisStack.push(requireFact);
-                parenthesisStack.push(operationProvided);
-                parenthesisStack.push(requireOperation);
-                requireFact = false;
-                operationProvided = false;
-                requireOperation = false;
-                parenthesisOpenCount++;
-            }
-            else if (type == Element.Type.CLOSE_PARENTHESIS)
-            {
-                parenthesisOpenCount--;
-                if (parenthesisOpenCount < 0 || prevElement == null || prevElement.getType() == Element.Type
-                .OPEN_PARENTHESIS)
-                    throw new RuntimeException("Invalid close parenthesis");
-                if (!parenthesisStack.empty())
-                {
-                    requireFact = parenthesisStack.pop();
-                    operationProvided = parenthesisStack.pop();
-                    requireOperation = parenthesisStack.pop();
+            Element nextElement = (i + 1) < elements.size() ? elements.get(i + 1) : null;
 
-                    requireFact = false;
+            switch (element.getType()) {
+                case IMPLY:
+                    if (afterImply || openParenthesis != 0)
+                        throw new RuntimeException("Invalid usage of imply found");
+                    afterImply = true;
+                    if (nextElement == null || prevElem == null)
+                        throw new RuntimeException("Cannot imply nothing!");
+                    break;
+                case OPEN_PARENTHESIS:
+                    openParenthesis++;
+                    break;
+                case CLOSE_PARENTHESIS:
+                    openParenthesis--;
+                    break;
+                case OR:
+                case XOR:
+                case AND:
+                    if (prevElem != null && prevElem.getType().isOperation())
+                        throw new RuntimeException("Fact expected!");
+                    if (nextElement == null || (nextElement.getType() != Element.Type.FACT && nextElement.getType() != Element.Type.OPEN_PARENTHESIS && nextElement.getType() != Element.Type.NOT))
+                        throw new RuntimeException(String.format("Invalid %s usage", element.getType()));
+                    break;
+                case NOT:
+                    if (nextElement == null || (nextElement.getType() != Element.Type.FACT && nextElement.getType() != Element.Type.OPEN_PARENTHESIS))
+                        throw new RuntimeException("Invalid NOT usage");
+                    if (prevElem != null && prevElem.getType() == Element.Type.NOT)
+                        throw new RuntimeException("Cannot use a NOT after a NOT");
+                    break;
+                case FACT:
+                    if (!afterImply) {
+                        if (nextElement == null)
+                            throw new RuntimeException("Missing imply and right part");
+                        else if (!nextElement.getType().isOperation() && nextElement.getType() != Element.Type.IMPLY && nextElement.getType() != Element.Type.CLOSE_PARENTHESIS) {
+                            throw new RuntimeException("Invalid token after FACT");
+                        }
+                    } else {
+                        if (nextElement != null && !nextElement.getType().isOperation() && nextElement.getType() != Element.Type.CLOSE_PARENTHESIS) {
+                            throw new RuntimeException("Invalid token after FACT");
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            prevElem = element;
+        }
 
-                }
-            }
-            else if (type == Element.Type.NOT)
-            {
-                requireFact = true;
-            }
-            else if (type == Element.Type.IMPLY)
-            {
-                if (requireFact && !operationProvided)
-                    throw new RuntimeException("Invalid usage of imply!");
-                requireFact = false;
-                requireOperation = false;
-            }
-            else if (type == Element.Type.FACT)
-            {
-                if (requireOperation)
-                    throw new RuntimeException("Fact not intended here!");
-                if (requireFact)
-                {
-                    if (!operationProvided)
-                        requireFact = false;
-                    else
-                        operationProvided = false;
-                }
-                else
-                    requireOperation = true;
-            }
-            else if (type.isOperation())
-            {
-                if (requireOperation)
-                {
-                    operationProvided = true;
-                    requireFact = true;
-                    requireOperation = false;
-                }
-                else
-                    throw new RuntimeException("Missing left operand!");
-            }
-            prevElement = element;
-        }*/
+        if (openParenthesis != 0)
+            throw new RuntimeException("Invalid parenthesis block found");
+
 
         Rule.Builder.IPartBuilder partBuilder = Rule.build();
         for (Element element : elements) {
