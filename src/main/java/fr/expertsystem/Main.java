@@ -9,19 +9,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
-public class Main
-{
+public class Main {
 
-    public static void main(String... args) throws IOException
-    {
+    public static void main(String... args) throws IOException {
         List<String> lines = Files.readAllLines(Paths.get(args[0]));
 
         Parser.Result result = Parser.parseLines(lines);
-        if (!result.isOk())
-        {
+        if (!result.isOk()) {
             System.err.println(String.format("Error: %s", result.getError()));
             return;
         }
@@ -38,13 +34,15 @@ public class Main
         rules.forEach(graph::addRule);
 
         GlobalState state = new GlobalState();
-        state.setFactState(new Fact("C"), FactState.TRUE);
+        for (Fact initialFact : result.getInitialFacts())
+            state.setFactState(initialFact, FactState.TRUE);
 
-        solveFact(new Fact("D"), state, graph);
+        for (Fact queryFact : result.getQueryFacts())
+            solveFact(queryFact, state, graph);
     }
 
-    private static void solveFact(Fact fact, GlobalState state, Graph graph)
-    {
+    private static void solveFact(Fact fact, GlobalState state, Graph graph) {
+        // FIXME: set resulting Factr state in GlobalState?
         System.out.println("Solving: " + fact + " = " + FactSolver.query(fact, state, graph));
     }
 }

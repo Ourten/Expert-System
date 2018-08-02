@@ -1,6 +1,7 @@
 package fr.expertsystem.parser;
 
 import fr.expertsystem.data.Conditions;
+import fr.expertsystem.data.Fact;
 import fr.expertsystem.data.Rule;
 
 import java.util.ArrayList;
@@ -10,16 +11,20 @@ import java.util.stream.Collectors;
 
 public class Parser {
     private static final char COMMENT_CHAR = '#';
-    private static final char INIT_CHAR    = '?';
-    private static final char QUERY_CHAR   = '=';
+    private static final char QUERY_CHAR = '?';
+    private static final char INIT_CHAR = '=';
 
     public static class Result {
 
         private String error;
         private List<Rule> rules;
+        private List<Fact> initialFacts;
+        private List<Fact> queryFacts;
 
-        private Result(List<Rule> rules) {
+        private Result(List<Rule> rules, List<Fact> initialFacts, List<Fact> queryFacts) {
             this.rules = rules;
+            this.initialFacts = initialFacts;
+            this.queryFacts = queryFacts;
         }
 
         private Result(String error) {
@@ -38,12 +43,20 @@ public class Parser {
             return getError() == null;
         }
 
-        public static Result Ok(List<Rule> rules) {
-            return new Result(rules);
+        public static Result Ok(List<Rule> rules, List<Fact> initialFacts, List<Fact> queryFacts) {
+            return new Result(rules, initialFacts, queryFacts);
         }
 
         public static Result Error(String error) {
             return new Result(error);
+        }
+
+        public List<Fact> getInitialFacts() {
+            return initialFacts;
+        }
+
+        public List<Fact> getQueryFacts() {
+            return queryFacts;
         }
     }
 
@@ -116,7 +129,7 @@ public class Parser {
     private static Element parseToken(char token) {
         Element.Type type = Element.Type.fromToken(token);
         if (type == null) {
-            if (Character.isAlphabetic(token))
+            if (token >= 'A' && token <= 'Z')
                 return new Element(Element.Type.FACT, String.valueOf(token));
             throw new RuntimeException(String.format("Unknown token \"%c\"!", token));
         }
@@ -275,33 +288,61 @@ public class Parser {
         return rawRules.stream().map(Parser::parseRule).collect(Collectors.toList());
     }
 
-    public static Result parseLines(List<String> lines)
-    {
+    public static Result parseLines(List<String> lines) {
         lines = lines.stream().filter((line) ->
                 !line.trim().isEmpty() && line.charAt(0) != COMMENT_CHAR).collect(Collectors.toList());
+
         List<String> rawRules = lines.stream().filter((line) ->
         {
             char c = line.trim().charAt(0);
             return c != INIT_CHAR && c != QUERY_CHAR;
         }).collect(Collectors.toList());
 
-        List<String> initAndQuery = lines.stream().filter((line) ->
+        List<String> initFactsList = lines.stream().filter((line) ->
         {
             char c = line.trim().charAt(0);
-            return c == INIT_CHAR || c == QUERY_CHAR;
-        }).collect(Collectors.toList());
+            return c == INIT_CHAR;
+        }).map(String::trim).collect(Collectors.toList());
 
-        if (initAndQuery.size() != 2)
-            return Result.Error("Initial facts or query is missing");
+        if (initFactsList.isEmpty())
+            return Result.Error("Initial facts are missing");
+        else if (initFactsList.size() != 1)
+            return Result.Error("Cannot have more than one initial facts declaration");
+
+        List<String> queryFactsList = lines.stream().filter((line) ->
+        {
+            char c = line.trim().charAt(0);
+            return c == QUERY_CHAR;
+        }).map(String::trim).collect(Collectors.toList());
+
+        if (queryFactsList.isEmpty())
+            return Result.Error("Query facts are missing");
+        else if (queryFactsList.size() != 1)
+            return Result.Error("Cannot have more than one query facts declaration");
 
         try {
             List<Rule> rules = Parser.parseRules(rawRules);
-            return Result.Ok(rules);
-        } catch (RuntimeException ex)
-        {
+            List<Fact> initialFacts = parseFacts(initFactsList.get(0));
+            List<Fact> queryFacts = parseFacts(queryFactsList.get(0));
+            return Result.Ok(rules, initialFacts, queryFacts);
+        } catch (RuntimeException ex) {
             // TODO: use custom exception
             return Result.Error(ex.getMessage());
         }
 
+    }
+
+    private static List<Fact> parseFacts(String rawFacts) {
+        // ignore initial char
+        rawFacts = rawFacts.substring(1);
+        List<Fact> facts = new ArrayList<>();
+        for (int i = 0; i < rawFacts.length(); i++) {
+            char c = rawFacts.charAt(i);
+            if (c >= 'A' && c <= 'Z')
+                facts.add(new Fact(String.valueOf(c)));
+            else
+                throw new RuntimeException(String.format("Invalid initial fact \"%c\"", c));
+        }
+        return facts;
     }
 }
