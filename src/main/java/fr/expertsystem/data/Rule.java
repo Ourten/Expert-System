@@ -63,6 +63,11 @@ public class Rule
         return Objects.hash(getLeftPart(), getRightPart());
     }
 
+    public Rule copy()
+    {
+        return new Rule(this.leftPart.copy(), this.rightPart.copy());
+    }
+
     public static class Builder
     {
         private RulePart leftPart;
@@ -218,6 +223,11 @@ public class Rule
         public int hashCode()
         {
             return Objects.hash(getElements());
+        }
+
+        public RulePart copy()
+        {
+            return new RulePart(new ArrayList<>(this.elements));
         }
     }
 }

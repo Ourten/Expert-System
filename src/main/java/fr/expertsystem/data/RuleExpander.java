@@ -12,7 +12,7 @@ public class RuleExpander
 
         Integer index = 0;
         for (Rule rule : original)
-            rules.addAll(expandRule(rule, index));
+            rules.addAll(expandRule(rule.copy(), index));
         return rules;
     }
 

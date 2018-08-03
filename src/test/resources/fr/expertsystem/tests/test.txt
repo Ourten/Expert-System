@@ -2,12 +2,11 @@
 # all the required rules and symbols, along with the bonus ones, will be
 # shown here. spacing is not important
 
-A => B
-B => A
-C => D
+A | B + C => E
+(F | G) + H => E
 
-=C
+=A
 
 # If no facts are initially true, then a simple "=" followed
 # by a newline is used
-?D
+?E

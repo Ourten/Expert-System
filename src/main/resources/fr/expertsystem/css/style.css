@@ -1,0 +1,37 @@
+.root {
+    -fx-background-color: ALICEBLUE;
+}
+
+.remove-button {
+    -fx-background-radius: 0 0 0 0;
+    -fx-background-color: transparent;
+    -fx-text-fill: #ff6f60;
+    -fx-cursor: hand;
+    -fx-opacity: 0.87;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Open Sans";
+}
+
+.fact-label {
+    -fx-text-fill: black;
+    -fx-opacity: 0.87;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Open Sans";
+}
+
+#ruleListView {
+    -fx-background-color: transparent;
+}
+
+#ruleListView .list-cell {
+    -fx-alignment: center;
+    -fx-background-color: transparent;
+}
+
+#ruleListView .list-cell {
+    -fx-font-size: 20.0;
+    -fx-text-fill: black;
+    -fx-opacity: 0.65;
+}
