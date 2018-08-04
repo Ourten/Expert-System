@@ -50,7 +50,7 @@ public class Main
 
     private static void solveFact(Fact fact, GlobalState state, Graph graph)
     {
-        // FIXME: set resulting Factr state in GlobalState?
+        // FIXME: set resulting Fact state in GlobalState?
         System.out.println("Solving: " + fact + " = " + FactSolver.query(fact, state, graph));
     }
 }

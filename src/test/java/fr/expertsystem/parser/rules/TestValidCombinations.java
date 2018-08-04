@@ -5,26 +5,16 @@ import fr.expertsystem.parser.Parser;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TestParserRules {
-    private static final char COMMENT_CHAR = '#';
-    private static final char INIT_CHAR = '?';
-    private static final char QUERY_CHAR = '=';
-
-    List<String> fileToString(String testFileName) throws IOException {
-        return Files.readAllLines(Paths.get(String.format("src/test/java/fr/expertsystem/parser/%s.txt"
-                , testFileName)));
-    }
+public class TestValidCombinations {
 
     List<String> recreateRules(String testFileName) throws IOException {
-        Parser.Result result = Parser.parseLines(fileToString(testFileName));
+        Parser.Result result = Parser.parseLines(ParserUtils.fileToString(testFileName));
         if (!result.isOk())
             throw new RuntimeException(result.getError());
         return result.getRules().stream().map(Rule::toString).collect(Collectors.toList());
@@ -33,9 +23,8 @@ public class TestParserRules {
     void testParserOutput(String testFileName) throws IOException {
         Function<String, String> spaceCleaner = (str) ->
                 str.replaceAll("\\s+", " ").trim();
-        List<String> rules = fileToString(testFileName).stream().map(spaceCleaner).collect(Collectors.toList());
+        List<String> rules = ParserUtils.fileToString(testFileName).stream().map(spaceCleaner).collect(Collectors.toList());
         List<String> recreatedRules = recreateRules(testFileName).stream().map(String::trim).collect(Collectors.toList());
-        ;
         assertThat(rules).containsAll(recreatedRules);
     }
 

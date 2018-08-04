@@ -156,7 +156,7 @@ public class Parser {
         }
     }
 
-    private static Rule parseRule(String rawRule) {
+    public static Rule parseRule(String rawRule) {
         List<Element> elements = new ArrayList<>();
         // Clean up the rule
         rawRule = rawRule.replaceAll("\\s+", " ").trim();
@@ -170,6 +170,7 @@ public class Parser {
 
         int openParenthesis = 0;
         boolean afterImply = false;
+        boolean hasAFact = false;
         Element prevElem = null;
         for (int i = 0; i < elements.size(); i++) {
             Element element = elements.get(i);
@@ -179,9 +180,10 @@ public class Parser {
                 case IMPLY:
                     if (afterImply || openParenthesis != 0)
                         throw new RuntimeException("Invalid usage of imply found");
-                    afterImply = true;
-                    if (nextElement == null || prevElem == null)
+                    if (nextElement == null || prevElem == null || !hasAFact)
                         throw new RuntimeException("Cannot imply nothing!");
+                    afterImply = true;
+                    hasAFact = false;
                     break;
                 case OPEN_PARENTHESIS:
                     openParenthesis++;
@@ -192,10 +194,14 @@ public class Parser {
                 case OR:
                 case XOR:
                 case AND:
-                    if (prevElem != null && prevElem.getType().isOperation())
+                    if (prevElem == null)
+                        throw new RuntimeException("Left fact is missing!");
+                    else if (prevElem.getType().isOperation())
                         throw new RuntimeException("Fact expected!");
                     if (nextElement == null || (nextElement.getType() != Element.Type.FACT && nextElement.getType() != Element.Type.OPEN_PARENTHESIS && nextElement.getType() != Element.Type.NOT))
                         throw new RuntimeException(String.format("Invalid %s usage", element.getType()));
+                    if (element.getType() != Element.Type.AND && afterImply)
+                        throw new RuntimeException(String.format("%s is not supported in conclusion!", element.getType()));
                     break;
                 case NOT:
                     if (nextElement == null || (nextElement.getType() != Element.Type.FACT && nextElement.getType() != Element.Type.OPEN_PARENTHESIS))
@@ -215,6 +221,7 @@ public class Parser {
                             throw new RuntimeException("Invalid token after FACT");
                         }
                     }
+                    hasAFact = true;
                     break;
                 default:
                     break;
@@ -224,6 +231,8 @@ public class Parser {
 
         if (openParenthesis != 0)
             throw new RuntimeException("Invalid parenthesis block found");
+        if (!hasAFact)
+            throw new RuntimeException("Right part needs at least one fact!");
 
 
         Rule.Builder.IPartBuilder partBuilder = Rule.build();
