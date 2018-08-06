@@ -6,17 +6,19 @@ import java.util.List;
 
 public class RuleExpander
 {
+    private static Integer expandedIndex;
+
     public static List<Rule> expandRules(List<Rule> original)
     {
         List<Rule> rules = new ArrayList<>();
 
-        Integer index = 0;
+        expandedIndex = 0;
         for (Rule rule : original)
-            rules.addAll(expandRule(rule.copy(), index));
+            rules.addAll(expandRule(rule.copy()));
         return rules;
     }
 
-    private static List<Rule> expandRule(Rule rule, Integer currentIndex)
+    private static List<Rule> expandRule(Rule rule)
     {
         if (rule.getLeftPart().getElements().contains(Conditions.OPEN_PARENTHESIS))
         {
@@ -27,16 +29,16 @@ public class RuleExpander
             List<IRuleElement> subList = leftElements.subList(startParenthesis, endParenthesis + 1);
 
             Rule.RulePart leftPart = new Rule.RulePart(new ArrayList<>(subList.subList(1, subList.size() - 1)));
-            Rule.RulePart rightPart = new Rule.RulePart(Collections.singletonList(new Fact("$" + currentIndex)));
+            Rule.RulePart rightPart = new Rule.RulePart(Collections.singletonList(new Fact("$" + expandedIndex)));
 
             Rule subRule = new Rule(leftPart, rightPart);
 
             subList.clear();
-            leftElements.add(startParenthesis, new Fact("$" + currentIndex));
-            currentIndex++;
+            leftElements.add(startParenthesis, new Fact("$" + expandedIndex));
+            expandedIndex++;
 
-            List<Rule> rules = new ArrayList<>(expandRule(subRule, currentIndex));
-            rules.addAll(expandRule(rule, currentIndex));
+            List<Rule> rules = new ArrayList<>(expandRule(subRule));
+            rules.addAll(expandRule(rule));
             return rules;
         }
         else
