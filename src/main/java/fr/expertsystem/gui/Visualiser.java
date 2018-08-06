@@ -1,9 +1,10 @@
 package fr.expertsystem.gui;
 
+import fr.expertsystem.Main;
 import fr.expertsystem.data.Fact;
+import fr.expertsystem.data.FactState;
 import fr.expertsystem.data.GlobalState;
 import fr.expertsystem.data.Rule;
-import fr.expertsystem.data.graph.Graph;
 import fr.expertsystem.parser.Parser;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -16,19 +17,20 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Visualiser extends Application
 {
-    private static Graph         graph;
     private static GlobalState   state;
     private static Parser.Result parsed;
+    private static List<Rule>    rules;
 
-    public static void start(Parser.Result parsed, Graph graph, GlobalState state)
+    public static void start(Parser.Result parsed, GlobalState state, List<Rule> rules)
     {
-        Visualiser.graph = graph;
         Visualiser.state = state;
         Visualiser.parsed = parsed;
+        Visualiser.rules = rules;
 
         Application.launch();
     }
@@ -58,9 +60,9 @@ public class Visualiser extends Application
         VBox queryPane = new VBox();
         queryPane.setPrefWidth(250);
 
-        ListView<FactBox> queryListView = new ListView<>();
+        ListView<QueryBox> queryListView = new ListView<>();
 
-        queryListView.setItems(parsed.getQueryFacts().stream().map(fact -> new FactBox(fact, queryListView))
+        queryListView.setItems(parsed.getQueryFacts().stream().map(fact -> new QueryBox(fact, state, queryListView))
                 .collect(Collectors.toCollection(FXCollections::observableArrayList)));
 
         queryPane.getChildren().add(queryListView);
@@ -83,7 +85,10 @@ public class Visualiser extends Application
         Button addQuery = new Button("Add Query");
         addQuery.setOnAction(e ->
         {
-            queryListView.getItems().add(new FactBox(new Fact(newQuery.getText()), queryListView));
+            Fact fact = new Fact(newQuery.getText());
+            parsed.getQueryFacts().add(fact);
+            state = Main.runSolver(parsed.getInitialFacts(), parsed.getQueryFacts(), rules);
+            queryListView.getItems().add(new QueryBox(fact, state, queryListView));
             addQuery.setDisable(true);
             newQuery.setText("");
         });
@@ -100,7 +105,6 @@ public class Visualiser extends Application
         addBox.getChildren().addAll(newQuery, addQuery);
 
         queryPane.getChildren().add(addBox);
-
         return queryPane;
     }
 
@@ -188,7 +192,47 @@ public class Visualiser extends Application
             Button remove = new Button("Remove");
             remove.getStyleClass().add("remove-button");
             remove.setPadding(Insets.EMPTY);
-            remove.setOnAction(e -> listView.getItems().remove(this));
+            remove.setOnAction(e ->
+            {
+                listView.getItems().remove(this);
+                parsed.getInitialFacts().remove(fact);
+            });
+            this.setRight(remove);
+
+            this.setStyle("-fx-background-color: transparent");
+
+            this.fact = fact;
+        }
+
+        public Fact getFact()
+        {
+            return fact;
+        }
+    }
+
+    private static class QueryBox extends BorderPane
+    {
+        private Fact fact;
+
+        public QueryBox(Fact fact, GlobalState state, ListView<QueryBox> listView)
+        {
+            Label label = new Label(fact.getID() + " - " + state.getFactState(fact));
+            label.getStyleClass().add("fact-label");
+
+            if (state.getFactState(fact) == FactState.TRUE)
+                label.getStyleClass().add("query-true");
+            else
+                label.getStyleClass().add("query-false");
+            this.setLeft(label);
+
+            Button remove = new Button("Remove");
+            remove.getStyleClass().add("remove-button");
+            remove.setPadding(Insets.EMPTY);
+            remove.setOnAction(e ->
+            {
+                listView.getItems().remove(this);
+                parsed.getQueryFacts().remove(fact);
+            });
             this.setRight(remove);
 
             this.setStyle("-fx-background-color: transparent");

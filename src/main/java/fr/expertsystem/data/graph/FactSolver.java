@@ -29,9 +29,8 @@ public class FactSolver
                 throw new RuntimeException("Contradiction of facts! Multiples rules that are true contradict each " +
                         "other!");
 
-            // Really this cannot happen. This was only useful in debug.
             if (!accumulated.isEmpty())
-                return accumulated.get(0).get();
+                state.setFactState(query, accumulated.get(0).get());
         }
         return state.getFactState(query);
     }

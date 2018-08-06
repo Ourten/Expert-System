@@ -35,3 +35,11 @@
     -fx-text-fill: black;
     -fx-opacity: 0.65;
 }
+
+.query-true {
+    -fx-text-fill: #33cc33;
+}
+
+.query-false {
+    -fx-text-fill: #ff6600;
+}
