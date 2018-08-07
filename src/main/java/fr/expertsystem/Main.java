@@ -8,6 +8,8 @@ import fr.expertsystem.parser.Parser;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,9 +19,29 @@ import java.util.List;
 public class Main
 {
 
-    public static void main(String... args) throws IOException
+    public static void main(String... args)
     {
-        List<String> lines = Files.readAllLines(Paths.get(args[0]));
+        List<String> lines;
+        try
+        {
+            Path path = Paths.get(args[0]);
+            if (!path.toFile().exists())
+            {
+                System.err.println("File not found");
+                return;
+            }
+            lines = Files.readAllLines(path);
+        }
+        catch (InvalidPathException ignored)
+        {
+            System.err.println("Error: path is invalid!");
+            return;
+        }
+        catch (IOException e)
+        {
+            System.err.println("Error: an I/O exception occurred!");
+            return;
+        }
 
         Parser.Result result = Parser.parseLines(lines);
         if (!result.isOk())
