@@ -20,12 +20,16 @@ public class FactsPane extends VBox
 {
     private ListView<FactBox> factListView;
     private Parser.Result     parsed;
+    private Visualiser        visualiser;
 
-    public FactsPane(Parser.Result parsed)
+    public FactsPane(Visualiser visualiser, Parser.Result parsed)
     {
         this.setPrefWidth(250);
 
-        factListView = new ListView<>();
+        this.visualiser = visualiser;
+        this.parsed = parsed;
+
+        this.factListView = new ListView<>();
         this.refreshList(parsed.getInitialFacts());
 
         this.getChildren().add(factListView);
@@ -48,9 +52,13 @@ public class FactsPane extends VBox
         Button addFact = new Button("Add Fact");
         addFact.setOnAction(e ->
         {
-            factListView.getItems().add(new FactBox(new Fact(newFact.getText()), factListView, parsed));
+            Fact fact = new Fact(newFact.getText());
+            factListView.getItems().add(new FactBox(visualiser, fact, factListView, parsed));
             addFact.setDisable(true);
             newFact.setText("");
+
+            parsed.getInitialFacts().add(fact);
+            visualiser.refreshGraph();
         });
         newFact.textProperty().addListener(obs ->
         {
@@ -69,7 +77,7 @@ public class FactsPane extends VBox
 
     public void refreshList(List<Fact> facts)
     {
-        this.factListView.setItems(facts.stream().map(fact -> new FactBox(fact, factListView, parsed))
+        this.factListView.setItems(facts.stream().map(fact -> new FactBox(this.visualiser, fact, factListView, parsed))
                 .collect(Collectors.toCollection(FXCollections::observableArrayList)));
     }
 
@@ -77,7 +85,7 @@ public class FactsPane extends VBox
     {
         private Fact fact;
 
-        public FactBox(Fact fact, ListView<FactBox> listView, Parser.Result parsed)
+        public FactBox(Visualiser visualiser, Fact fact, ListView<FactBox> listView, Parser.Result parsed)
         {
             Label label = new Label(fact.getID());
             label.getStyleClass().add("fact-label");
@@ -90,6 +98,7 @@ public class FactsPane extends VBox
             {
                 listView.getItems().remove(this);
                 parsed.getInitialFacts().remove(fact);
+                visualiser.refreshGraph();
             });
             this.setRight(remove);
 

@@ -1,20 +1,17 @@
 package fr.expertsystem.gui;
 
 import fr.expertsystem.Main;
-import fr.expertsystem.data.Fact;
-import fr.expertsystem.data.FactState;
 import fr.expertsystem.data.GlobalState;
 import fr.expertsystem.data.Rule;
 import fr.expertsystem.parser.Parser;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 
 import java.util.List;
@@ -36,6 +33,7 @@ public class Visualiser extends Application
     }
 
     private FactsPane factsPane;
+    private QueryPane queryPane;
 
     @Override
     public void start(Stage stage)
@@ -43,72 +41,37 @@ public class Visualiser extends Application
         HBox root = new HBox();
         root.getStyleClass().add("root");
 
-        Scene scene = new Scene(root, 1000, 600);
+        Scene scene = new Scene(root, 1000, 400);
         scene.getStylesheets().add("/fr/expertsystem/css/style.css");
 
         stage.setTitle("Expert-System");
         stage.setScene(scene);
         stage.show();
 
-        this.factsPane = new FactsPane(parsed);
+        this.factsPane = new FactsPane(this, parsed);
         root.getChildren().add(factsPane);
         Pane rulePane = this.setupRulePane();
         root.getChildren().add(rulePane);
         HBox.setHgrow(rulePane, Priority.ALWAYS);
-        root.getChildren().add(this.setupQueryPane());
+
+        this.queryPane = new QueryPane(this, parsed, rules);
+        root.getChildren().add(queryPane);
     }
 
-    private Pane setupQueryPane()
+    void refreshGraph()
     {
-        VBox queryPane = new VBox();
-        queryPane.setPrefWidth(250);
+        this.setState(Main.runSolver(parsed.getInitialFacts(), parsed.getQueryFacts(), rules));
+        this.queryPane.refreshQuery();
+    }
 
-        ListView<QueryBox> queryListView = new ListView<>();
+    void setState(GlobalState state)
+    {
+        Visualiser.state = state;
+    }
 
-        queryListView.setItems(parsed.getQueryFacts().stream().map(fact -> new QueryBox(fact, state, queryListView))
-                .collect(Collectors.toCollection(FXCollections::observableArrayList)));
-
-        queryPane.getChildren().add(queryListView);
-
-        HBox addBox = new HBox();
-
-        TextField newQuery = new TextField();
-        newQuery.setPrefWidth(150);
-        newQuery.setOnKeyTyped(e ->
-        {
-            if (!e.getCharacter().matches("[A-Z]") || newQuery.getText().length() >= 1)
-                e.consume();
-            if (newQuery.getText().length() == 0 && e.getCharacter().matches("[a-z]"))
-            {
-                newQuery.setText(e.getCharacter().toUpperCase());
-                newQuery.positionCaret(1);
-            }
-        });
-
-        Button addQuery = new Button("Add Query");
-        addQuery.setOnAction(e ->
-        {
-            Fact fact = new Fact(newQuery.getText());
-            parsed.getQueryFacts().add(fact);
-            state = Main.runSolver(parsed.getInitialFacts(), parsed.getQueryFacts(), rules);
-            queryListView.getItems().add(new QueryBox(fact, state, queryListView));
-            addQuery.setDisable(true);
-            newQuery.setText("");
-        });
-        newQuery.textProperty().addListener(obs ->
-        {
-            if (newQuery.getText().length() == 1 && queryListView.getItems().stream().noneMatch(box -> box.getFact().getID().equals(newQuery.getText())))
-                addQuery.setDisable(false);
-            else
-                addQuery.setDisable(true);
-        });
-        addQuery.setDisable(true);
-
-        HBox.setHgrow(newQuery, Priority.ALWAYS);
-        addBox.getChildren().addAll(newQuery, addQuery);
-
-        queryPane.getChildren().add(addBox);
-        return queryPane;
+    GlobalState getState()
+    {
+        return Visualiser.state;
     }
 
     private Pane setupRulePane()
@@ -129,41 +92,5 @@ public class Visualiser extends Application
         AnchorPane.setBottomAnchor(ruleListView, 0D);
 
         return rulePane;
-    }
-
-    private static class QueryBox extends BorderPane
-    {
-        private Fact fact;
-
-        public QueryBox(Fact fact, GlobalState state, ListView<QueryBox> listView)
-        {
-            Label label = new Label(fact.getID() + " - " + state.getFactState(fact));
-            label.getStyleClass().add("fact-label");
-
-            if (state.getFactState(fact) == FactState.TRUE)
-                label.getStyleClass().add("query-true");
-            else
-                label.getStyleClass().add("query-false");
-            this.setLeft(label);
-
-            Button remove = new Button("Remove");
-            remove.getStyleClass().add("remove-button");
-            remove.setPadding(Insets.EMPTY);
-            remove.setOnAction(e ->
-            {
-                listView.getItems().remove(this);
-                parsed.getQueryFacts().remove(fact);
-            });
-            this.setRight(remove);
-
-            this.setStyle("-fx-background-color: transparent");
-
-            this.fact = fact;
-        }
-
-        public Fact getFact()
-        {
-            return fact;
-        }
     }
 }
