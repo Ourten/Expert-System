@@ -35,6 +35,8 @@ public class Visualiser extends Application
         Application.launch();
     }
 
+    private FactsPane factsPane;
+
     @Override
     public void start(Stage stage)
     {
@@ -48,7 +50,8 @@ public class Visualiser extends Application
         stage.setScene(scene);
         stage.show();
 
-        root.getChildren().add(this.setupFactPane());
+        this.factsPane = new FactsPane(parsed);
+        root.getChildren().add(factsPane);
         Pane rulePane = this.setupRulePane();
         root.getChildren().add(rulePane);
         HBox.setHgrow(rulePane, Priority.ALWAYS);
@@ -126,88 +129,6 @@ public class Visualiser extends Application
         AnchorPane.setBottomAnchor(ruleListView, 0D);
 
         return rulePane;
-    }
-
-    private Pane setupFactPane()
-    {
-        VBox factsPane = new VBox();
-        factsPane.setPrefWidth(250);
-
-        ListView<FactBox> factListView = new ListView<>();
-
-        factListView.setItems(parsed.getInitialFacts().stream().map(fact -> new FactBox(fact, factListView))
-                .collect(Collectors.toCollection(FXCollections::observableArrayList)));
-
-        factsPane.getChildren().add(factListView);
-
-        HBox addBox = new HBox();
-
-        TextField newFact = new TextField();
-        newFact.setPrefWidth(150);
-        newFact.setOnKeyTyped(e ->
-        {
-            if (!e.getCharacter().matches("[A-Z]") || newFact.getText().length() >= 1)
-                e.consume();
-            if (newFact.getText().length() == 0 && e.getCharacter().matches("[a-z]"))
-            {
-                newFact.setText(e.getCharacter().toUpperCase());
-                newFact.positionCaret(1);
-            }
-        });
-
-        Button addFact = new Button("Add Fact");
-        addFact.setOnAction(e ->
-        {
-            factListView.getItems().add(new FactBox(new Fact(newFact.getText()), factListView));
-            addFact.setDisable(true);
-            newFact.setText("");
-        });
-        newFact.textProperty().addListener(obs ->
-        {
-            if (newFact.getText().length() == 1 && factListView.getItems().stream().noneMatch(box -> box.getFact().getID().equals(newFact.getText())))
-                addFact.setDisable(false);
-            else
-                addFact.setDisable(true);
-        });
-        addFact.setDisable(true);
-
-        HBox.setHgrow(newFact, Priority.ALWAYS);
-        addBox.getChildren().addAll(newFact, addFact);
-
-        factsPane.getChildren().add(addBox);
-
-        return factsPane;
-    }
-
-    private static class FactBox extends BorderPane
-    {
-        private Fact fact;
-
-        public FactBox(Fact fact, ListView<FactBox> listView)
-        {
-            Label label = new Label(fact.getID());
-            label.getStyleClass().add("fact-label");
-            this.setLeft(label);
-
-            Button remove = new Button("Remove");
-            remove.getStyleClass().add("remove-button");
-            remove.setPadding(Insets.EMPTY);
-            remove.setOnAction(e ->
-            {
-                listView.getItems().remove(this);
-                parsed.getInitialFacts().remove(fact);
-            });
-            this.setRight(remove);
-
-            this.setStyle("-fx-background-color: transparent");
-
-            this.fact = fact;
-        }
-
-        public Fact getFact()
-        {
-            return fact;
-        }
     }
 
     private static class QueryBox extends BorderPane
