@@ -8,13 +8,19 @@ public class RuleExpander
 {
     private static Integer expandedIndex;
 
-    public static List<Rule> expandRules(List<Rule> original)
+    public static List<Rule> expandRules(List<Rule> original, ExpandedRuleMap ruleMap)
     {
         List<Rule> rules = new ArrayList<>();
 
         expandedIndex = 0;
         for (Rule rule : original)
-            rules.addAll(expandRule(rule.copy()));
+        {
+            List<Rule> expanded = expandRule(rule.copy());
+
+            expanded.stream().filter(candidate -> candidate.getRightPart().equals(rule.getRightPart())).findFirst()
+                    .ifPresent(subRule -> ruleMap.addExpanded(rule, subRule));
+            rules.addAll(expanded);
+        }
         return rules;
     }
 

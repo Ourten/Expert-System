@@ -73,6 +73,9 @@ public class QueryPane extends VBox
         addBox.getChildren().addAll(newQuery, addQuery);
 
         this.getChildren().add(addBox);
+        VBox.setVgrow(queryListView, Priority.ALWAYS);
+
+        this.refreshQuery();
     }
 
     public void refreshQuery()

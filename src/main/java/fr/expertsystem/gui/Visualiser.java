@@ -1,6 +1,7 @@
 package fr.expertsystem.gui;
 
 import fr.expertsystem.Main;
+import fr.expertsystem.data.ExpandedRuleMap;
 import fr.expertsystem.data.GlobalState;
 import fr.expertsystem.data.Rule;
 import fr.expertsystem.parser.Parser;
@@ -19,21 +20,24 @@ import java.util.stream.Collectors;
 
 public class Visualiser extends Application
 {
-    private static GlobalState   state;
+    private static GlobalState state;
     private static Parser.Result parsed;
-    private static List<Rule>    rules;
+    private static List<Rule> rules;
+    private static ExpandedRuleMap ruleMap;
 
-    public static void start(Parser.Result parsed, GlobalState state, List<Rule> rules)
+    public static void start(Parser.Result parsed, GlobalState state, List<Rule> rules, ExpandedRuleMap ruleMap)
     {
         Visualiser.state = state;
         Visualiser.parsed = parsed;
         Visualiser.rules = rules;
+        Visualiser.ruleMap = ruleMap;
 
         Application.launch();
     }
 
     private FactsPane factsPane;
     private QueryPane queryPane;
+    private RulePane rulePane;
 
     @Override
     public void start(Stage stage)
@@ -50,7 +54,7 @@ public class Visualiser extends Application
 
         this.factsPane = new FactsPane(this, parsed);
         root.getChildren().add(factsPane);
-        Pane rulePane = this.setupRulePane();
+        this.rulePane = new RulePane(this, parsed);
         root.getChildren().add(rulePane);
         HBox.setHgrow(rulePane, Priority.ALWAYS);
 
@@ -61,6 +65,7 @@ public class Visualiser extends Application
     void refreshGraph()
     {
         this.setState(Main.runSolver(parsed.getInitialFacts(), parsed.getQueryFacts(), rules));
+        this.rulePane.refreshRules();
         this.queryPane.refreshQuery();
     }
 
@@ -74,23 +79,8 @@ public class Visualiser extends Application
         return Visualiser.state;
     }
 
-    private Pane setupRulePane()
+    ExpandedRuleMap getRuleMap()
     {
-        AnchorPane rulePane = new AnchorPane();
-
-        ListView<String> ruleListView = new ListView<>();
-        ruleListView.setMouseTransparent(true);
-        ruleListView.setFocusTraversable(false);
-        ruleListView.setId("ruleListView");
-        ruleListView.setItems(parsed.getRules().stream().map(Rule::toString)
-                .collect(Collectors.toCollection(FXCollections::observableArrayList)));
-
-        rulePane.getChildren().add(ruleListView);
-        AnchorPane.setLeftAnchor(ruleListView, 0D);
-        AnchorPane.setRightAnchor(ruleListView, 0D);
-        AnchorPane.setTopAnchor(ruleListView, 0D);
-        AnchorPane.setBottomAnchor(ruleListView, 0D);
-
-        return rulePane;
+        return Visualiser.ruleMap;
     }
 }

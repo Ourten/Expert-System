@@ -43,3 +43,11 @@
 .query-false {
     -fx-text-fill: #ff6600;
 }
+
+.rule-valid {
+    -fx-fill: #33cc33;
+}
+
+.rule-invalid {
+    -fx-fill: #ff6600;
+}

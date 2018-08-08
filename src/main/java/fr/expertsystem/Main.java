@@ -58,7 +58,8 @@ public class Main
         if (argsList.contains("-v"))
             result.getRules().forEach(System.out::println);
 
-        List<Rule> rules = RuleExpander.expandRules(new ArrayList<>(result.getRules()));
+        ExpandedRuleMap ruleMap = new ExpandedRuleMap();
+        List<Rule> rules = RuleExpander.expandRules(new ArrayList<>(result.getRules()), ruleMap);
 
         if (argsList.contains("-v"))
         {
@@ -69,7 +70,7 @@ public class Main
         {
             GlobalState state = runSolver(result.getInitialFacts(), result.getQueryFacts(), rules);
             if (argsList.contains("-g"))
-                Visualiser.start(result, state, rules);
+                Visualiser.start(result, state, rules, ruleMap);
         } catch (RuntimeException ex)
         {
             System.err.printf("Error: %s\n", ex.getMessage());

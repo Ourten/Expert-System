@@ -71,6 +71,7 @@ public class FactsPane extends VBox
 
         HBox.setHgrow(newFact, Priority.ALWAYS);
         addBox.getChildren().addAll(newFact, addFact);
+        VBox.setVgrow(factListView, Priority.ALWAYS);
 
         this.getChildren().add(addBox);
     }
