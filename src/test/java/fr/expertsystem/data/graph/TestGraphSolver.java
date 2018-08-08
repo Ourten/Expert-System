@@ -22,7 +22,7 @@ class TestGraphSolver
                 .cond(Conditions.OPEN_PARENTHESIS).fact("B").cond(Conditions.OR).fact("C").cond(Conditions.CLOSE_PARENTHESIS).imply().fact("D").create();
 
         Graph graph = new Graph();
-        RuleExpander.expandRules(Collections.singletonList(rule)).forEach(graph::addRule);
+        RuleExpander.expandRules(Collections.singletonList(rule), new ExpandedRuleMap()).forEach(graph::addRule);
 
         assertThat(FactSolver.query(new Fact("D"), state.copy(), graph)).isEqualTo(FactState.TRUE);
 

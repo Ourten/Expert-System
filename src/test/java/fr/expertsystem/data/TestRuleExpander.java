@@ -17,7 +17,7 @@ class TestRuleExpander
                 .cond(Conditions.OPEN_PARENTHESIS).fact("B").cond(Conditions.OR).fact("C").cond(Conditions.CLOSE_PARENTHESIS)
                 .imply().fact("D").create();
 
-        List<Rule> expanded = RuleExpander.expandRules(Collections.singletonList(rule));
+        List<Rule> expanded = RuleExpander.expandRules(Collections.singletonList(rule), new ExpandedRuleMap());
 
         assertThat(expanded).hasSize(2);
 
@@ -36,7 +36,7 @@ class TestRuleExpander
                 .cond(Conditions.CLOSE_PARENTHESIS)
                 .imply().fact("D").create();
 
-        List<Rule> expanded = RuleExpander.expandRules(Collections.singletonList(rule));
+        List<Rule> expanded = RuleExpander.expandRules(Collections.singletonList(rule), new ExpandedRuleMap());
         assertThat(expanded).hasSize(3);
 
         // B | C => $1
@@ -56,7 +56,7 @@ class TestRuleExpander
                 .cond(Conditions.CLOSE_PARENTHESIS).cond(Conditions.AND).cond(Conditions.OPEN_PARENTHESIS)
                 .fact("B").cond(Conditions.XOR).fact("C").cond(Conditions.CLOSE_PARENTHESIS).imply().fact("D").create();
 
-        List<Rule> expanded = RuleExpander.expandRules(Collections.singletonList(rule));
+        List<Rule> expanded = RuleExpander.expandRules(Collections.singletonList(rule), new ExpandedRuleMap());
         assertThat(expanded).hasSize(3);
 
         // A | B => $0
