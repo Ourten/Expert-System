@@ -312,6 +312,33 @@ public class Parser {
         lines = lines.stream().filter((line) ->
                 !line.trim().isEmpty() && line.charAt(0) != COMMENT_CHAR).collect(Collectors.toList());
 
+        boolean foundInitialFact = false;
+        boolean foundQuery = false;
+        for (String line : lines)
+        {
+            if (line.startsWith("" + QUERY_CHAR))
+            {
+                if (foundQuery)
+                    return Result.Error("Cannot have two query definition!");
+                if (!foundInitialFact)
+                    return Result.Error("Initial facts definition must be before the query one!");
+                foundQuery = true;
+            }
+            if (line.startsWith("" + INIT_CHAR))
+            {
+                if (foundInitialFact)
+                    return Result.Error("Cannot have two initial facts definition!");
+                if (foundQuery)
+                    return Result.Error("Initial facts definition must be before the query one!");
+                foundInitialFact = true;
+            }
+
+
+        }
+
+        if (!foundInitialFact || !foundQuery)
+            return Result.Error("Missing initial facts or query!");
+
         List<String> rawRules = lines.stream().filter((line) ->
         {
             char c = line.trim().charAt(0);

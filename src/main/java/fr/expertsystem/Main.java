@@ -21,6 +21,12 @@ public class Main
 
     public static void main(String... args)
     {
+        List<String> argsList = Arrays.asList(args);
+        if (argsList.isEmpty())
+        {
+            System.err.println("Usage: file [-g] [-v]");
+            return;
+        }
         List<String> lines;
         try
         {
@@ -50,15 +56,19 @@ public class Main
             return;
         }
 
-        result.getRules().forEach(System.out::println);
+        if (argsList.contains("-v"))
+            result.getRules().forEach(System.out::println);
 
         List<Rule> rules = RuleExpander.expandRules(new ArrayList<>(result.getRules()));
 
-        System.out.println("Expanding rules...");
-        rules.forEach(System.out::println);
+        if (argsList.contains("-v"))
+        {
+            System.out.println("Expanding rules...");
+            rules.forEach(System.out::println);
+        }
         GlobalState state = runSolver(result.getInitialFacts(), result.getQueryFacts(), rules);
 
-        if (Arrays.asList(args).contains("-g"))
+        if (argsList.contains("-g"))
             Visualiser.start(result, state, rules);
     }
 
