@@ -14,54 +14,66 @@ public class Parser {
     private static final char QUERY_CHAR = '?';
     private static final char INIT_CHAR = '=';
 
-    public static class Result {
+    public static class Result
+    {
 
         private String error;
         private List<Rule> rules;
         private List<Fact> initialFacts;
         private List<Fact> queryFacts;
 
-        private Result(List<Rule> rules, List<Fact> initialFacts, List<Fact> queryFacts) {
+        private Result(List<Rule> rules, List<Fact> initialFacts, List<Fact> queryFacts)
+        {
             this.rules = rules;
             this.initialFacts = initialFacts;
             this.queryFacts = queryFacts;
         }
 
-        private Result(String error) {
+        private Result(String error)
+        {
             this.error = error;
         }
 
-        public List<Rule> getRules() {
+        public List<Rule> getRules()
+        {
             return rules;
         }
 
-        public String getError() {
+        public String getError()
+        {
             return error;
         }
 
-        public boolean isOk() {
+        public boolean isOk()
+        {
             return getError() == null;
         }
 
-        public static Result Ok(List<Rule> rules, List<Fact> initialFacts, List<Fact> queryFacts) {
+        public static Result Ok(List<Rule> rules, List<Fact> initialFacts, List<Fact> queryFacts)
+        {
             return new Result(rules, initialFacts, queryFacts);
         }
 
-        public static Result Error(String error) {
+        public static Result Error(String error)
+        {
             return new Result(error);
         }
 
-        public List<Fact> getInitialFacts() {
+        public List<Fact> getInitialFacts()
+        {
             return initialFacts;
         }
 
-        public List<Fact> getQueryFacts() {
+        public List<Fact> getQueryFacts()
+        {
             return queryFacts;
         }
     }
 
-    static class Element {
-        enum Type {
+    static class Element
+    {
+        enum Type
+        {
             XOR('^', true),
             OR('|', true),
             AND('+', true),
@@ -75,16 +87,19 @@ public class Parser {
             private final char token;
             private final boolean isOperation;
 
-            Type(char token, boolean isOperation) {
+            Type(char token, boolean isOperation)
+            {
                 this.token = token;
                 this.isOperation = isOperation;
             }
 
-            Type() {
+            Type()
+            {
                 this('\0', false);
             }
 
-            public static Type fromToken(char token) {
+            public static Type fromToken(char token)
+            {
                 for (Type type : values())
                     if (type.token == token && type.token != '\0')
                         return type;
@@ -92,15 +107,18 @@ public class Parser {
             }
 
             @Override
-            public String toString() {
-                return String.format("%c", this.token);
+            public String toString()
+            {
+                return String.valueOf(getToken());
             }
 
-            public char getToken() {
+            public char getToken()
+            {
                 return token;
             }
 
-            public boolean isOperation() {
+            public boolean isOperation()
+            {
                 return isOperation;
             }
         }
@@ -108,27 +126,33 @@ public class Parser {
         private final Type type;
         private final String factID;
 
-        public Element(Type type, String factID) {
+        public Element(Type type, String factID)
+        {
             this.type = type;
             this.factID = factID;
         }
 
-        public Element(Type type) {
+        public Element(Type type)
+        {
             this(type, null);
         }
 
-        public Type getType() {
+        public Type getType()
+        {
             return type;
         }
 
-        public String getFactID() {
+        public String getFactID()
+        {
             return factID;
         }
     }
 
-    private static Element parseToken(char token) {
+    private static Element parseToken(char token)
+    {
         Element.Type type = Element.Type.fromToken(token);
-        if (type == null) {
+        if (type == null)
+        {
             if (token >= 'A' && token <= 'Z')
                 return new Element(Element.Type.FACT, String.valueOf(token));
             throw new RuntimeException(String.format("Unknown token \"%c\"!", token));
@@ -136,18 +160,22 @@ public class Parser {
         return new Element(type);
     }
 
-    private static void parseStringToken(List<Element> elements, String token) {
+    private static void parseStringToken(List<Element> elements, String token)
+    {
         for (int i = 0; i < token.length(); i++) {
             char c = token.charAt(i);
 
             Element newElem;
 
             //  2 char token
-            if (token.substring(i).startsWith("=>")) {
+            if (token.substring(i).startsWith("=>"))
+            {
                 newElem = new Element(Element.Type.IMPLY);
                 // skip already parsed char
                 i++;
-            } else {
+            }
+            else
+            {
                 newElem = parseToken(c);
                 if (newElem.getType() == Element.Type.BREAK)
                     break;
@@ -156,14 +184,16 @@ public class Parser {
         }
     }
 
-    public static Rule parseRule(String rawRule) {
+    public static Rule parseRule(String rawRule)
+    {
         List<Element> elements = new ArrayList<>();
         // Clean up the rule
         rawRule = rawRule.replaceAll("\\s+", " ").trim();
         StringTokenizer tokenizer = new StringTokenizer(rawRule, " ");
 
         // Collect every elements
-        while (tokenizer.hasMoreTokens()) {
+        while (tokenizer.hasMoreTokens())
+        {
             String token = tokenizer.nextToken();
             parseStringToken(elements, token);
         }
@@ -172,7 +202,8 @@ public class Parser {
         boolean afterImply = false;
         boolean hasAFact = false;
         Element prevElem = null;
-        for (int i = 0; i < elements.size(); i++) {
+        for (int i = 0; i < elements.size(); i++)
+        {
             Element element = elements.get(i);
             Element nextElement = (i + 1) < elements.size() ? elements.get(i + 1) : null;
 
@@ -236,8 +267,10 @@ public class Parser {
 
 
         Rule.Builder.IPartBuilder partBuilder = Rule.build();
-        for (Element element : elements) {
-            switch (element.getType()) {
+        for (Element element : elements)
+        {
+            switch (element.getType())
+            {
                 case OPEN_PARENTHESIS:
                     partBuilder.cond(Conditions.OPEN_PARENTHESIS);
                     break;
@@ -262,16 +295,20 @@ public class Parser {
                 case FACT:
                     partBuilder.fact(element.getFactID());
                     break;
+                default:
+                    throw new RuntimeException(String.format("Unexpected token found: %s", element.getType()));
             }
         }
         return partBuilder.create();
     }
 
-    private static List<Rule> parseRules(List<String> rawRules) {
+    private static List<Rule> parseRules(List<String> rawRules)
+    {
         return rawRules.stream().map(Parser::parseRule).collect(Collectors.toList());
     }
 
-    public static Result parseLines(List<String> lines) {
+    public static Result parseLines(List<String> lines)
+    {
         lines = lines.stream().filter((line) ->
                 !line.trim().isEmpty() && line.charAt(0) != COMMENT_CHAR).collect(Collectors.toList());
 
@@ -303,23 +340,27 @@ public class Parser {
         else if (queryFactsList.size() != 1)
             return Result.Error("Cannot have more than one query facts declaration");
 
-        try {
+        try
+        {
             List<Rule> rules = Parser.parseRules(rawRules);
             List<Fact> initialFacts = parseFacts(initFactsList.get(0));
             List<Fact> queryFacts = parseFacts(queryFactsList.get(0));
             return Result.Ok(rules, initialFacts, queryFacts);
-        } catch (RuntimeException ex) {
+        } catch (RuntimeException ex)
+        {
             // TODO: use custom exception
             return Result.Error(ex.getMessage());
         }
 
     }
 
-    private static List<Fact> parseFacts(String rawFacts) {
+    private static List<Fact> parseFacts(String rawFacts)
+    {
         // ignore initial char
         rawFacts = rawFacts.substring(1);
         List<Fact> facts = new ArrayList<>();
-        for (int i = 0; i < rawFacts.length(); i++) {
+        for (int i = 0; i < rawFacts.length(); i++)
+        {
             char c = rawFacts.charAt(i);
             if (c >= 'A' && c <= 'Z')
                 facts.add(new Fact(String.valueOf(c)));
