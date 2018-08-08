@@ -256,7 +256,7 @@ public class TestSubject
     void parenthesisTest5()
     {
         Map<Fact, FactState> factsMap = new HashMap<>();
-        factsMap.put(new Fact("E"), FactState.FALSE);
+        factsMap.put(new Fact("E"), FactState.TRUE);
         executeProgram(factsMap, constructTestPath("parenthesis/parenthesis_conditions_5"));
     }
 

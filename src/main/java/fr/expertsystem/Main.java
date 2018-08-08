@@ -52,7 +52,7 @@ public class Main
         Parser.Result result = Parser.parseLines(lines);
         if (!result.isOk())
         {
-            System.err.println(String.format("Error: %s", result.getError()));
+            System.err.printf("Error: %s\n", result.getError());
             return;
         }
 
@@ -66,13 +66,18 @@ public class Main
             System.out.println("Expanding rules...");
             rules.forEach(System.out::println);
         }
-        GlobalState state = runSolver(result.getInitialFacts(), result.getQueryFacts(), rules);
-
-        if (argsList.contains("-g"))
-            Visualiser.start(result, state, rules);
+        try
+        {
+            GlobalState state = runSolver(result.getInitialFacts(), result.getQueryFacts(), rules);
+            if (argsList.contains("-g"))
+                Visualiser.start(result, state, rules);
+        } catch (RuntimeException ex)
+        {
+            System.err.printf("Error: %s\n", ex.getMessage());
+        }
     }
 
-    public static GlobalState runSolver(List<Fact> initialFacts, List<Fact> queryFacts, List<Rule> rules)
+    public static GlobalState runSolver(List<Fact> initialFacts, List<Fact> queryFacts, List<Rule> rules) throws RuntimeException
     {
         Graph graph = new Graph();
         rules.forEach(graph::addRule);
